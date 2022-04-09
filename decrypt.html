@@ -28,6 +28,28 @@ function print(text, color) {
   output.appendChild(span);
   output.appendChild(document.createElement('br'));
 }
+  
+function decrypt_(b64text, format, embedded_iv) {
+  var ciphertext = CryptoJS.enc.Base64.parse(b64text);
+  ciphertext = CryptoJS.enc.Hex.parse(ciphertext.toString().slice(4));
+  var key = CryptoJS.SHA256(keymatl8);
+  var iv;
+  if (embedded_iv) {
+    iv = CryptoJS.enc.Hex.parse(ciphertext.toString().slice(0, 32));
+    ciphertext = CryptoJS.enc.Hex.parse(ciphertext.toString().slice(32));
+  } else {
+    iv = CryptoJS.lib.WordArray.create([0, 0, 0, 0]);
+  }
+  var options = {iv: iv, mode: CryptoJS.mode.CBC};
+  var decryptor = CryptoJS.algo.AES.createDecryptor(key, options);
+  var part1 = decryptor.process(ciphertext);
+  var part2 = decryptor.finalize();
+  var plaintext = part1.toString(format) + part2.toString(format);
+  if (plaintext.length == 0 && ciphertext.words.length > 0) {
+    print('Decryption was unsuccessful', 'red');
+  }
+  return plaintext;
+}
 
 function decrypt_8(b64text, format, embedded_iv) {
   var ciphertext = CryptoJS.enc.Base64.parse(b64text);
